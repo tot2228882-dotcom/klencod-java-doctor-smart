@@ -1,120 +1,145 @@
-EditText nameInput, symptomsInput;
-TextView resultText;
+package com.example.smartdoctor;
 
-@Override
-protected void onCreate(Bundle savedInstanceState) {
-    super.onCreate(savedInstanceState);
+import android.graphics.Color;
+import android.os.Bundle;
+import android.text.InputType;
+import android.util.TypedValue;
+import android.view.Gravity;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.LinearLayout;
+import android.widget.ScrollView;
+import android.widget.TextView;
 
-    // Main layout
-    LinearLayout layout = new LinearLayout(this);
-    layout.setOrientation(LinearLayout.VERTICAL);
-    layout.setPadding(32, 32, 32, 32);
-    layout.setBackgroundColor(Color.rgb(240, 248, 248));
+import androidx.appcompat.app.AppCompatActivity;
 
-    ScrollView scrollView = new ScrollView(this);
-    scrollView.addView(layout);
+public class MainActivity extends AppCompatActivity {
 
-    // App title
-    TextView title = new TextView(this);
-    title.setText("🩺 طبيبي الذكي\nSmart Doctor AI");
-    title.setTextSize(27);
-    title.setTextColor(Color.rgb(0, 105, 100));
-    title.setGravity(Gravity.CENTER);
-    title.setPadding(0, 20, 0, 30);
-    layout.addView(title);
+    private EditText nameInput, symptomsInput;
+    private TextView resultText;
+    private ScrollView scrollView;
 
-    // Patient name
-    nameInput = new EditText(this);
-    nameInput.setHint("أدخل اسم المريض");
-    layout.addView(nameInput);
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
 
-    // Symptoms
-    symptomsInput = new EditText(this);
-    symptomsInput.setHint(
-        "اكتب الأعراض، مثال: صداع ودوخة"
-    );
-    symptomsInput.setMinLines(3);
-    symptomsInput.setGravity(Gravity.TOP);
-    layout.addView(symptomsInput);
+        // ===== التخطيط الأساسي =====
+        LinearLayout layout = new LinearLayout(this);
+        layout.setOrientation(LinearLayout.VERTICAL);
+        int pad = dp(24);
+        layout.setPadding(pad, pad, pad, pad);
+        layout.setBackgroundColor(Color.rgb(240, 248, 248));
 
-    // Analyze button
-    Button analyzeButton = new Button(this);
-    analyzeButton.setText("تحليل الأعراض");
-    layout.addView(analyzeButton);
+        scrollView = new ScrollView(this);
+        scrollView.addView(layout);
 
-    // Result area
-    resultText = new TextView(this);
-    resultText.setTextSize(18);
-    resultText.setTextColor(Color.DKGRAY);
-    resultText.setPadding(0, 25, 0, 25);
-    layout.addView(resultText);
+        // ===== العنوان =====
+        TextView title = new TextView(this);
+        title.setText("🩺 طبيبي الذكي\nSmart Doctor AI");
+        title.setTextSize(27);
+        title.setTextColor(Color.rgb(0, 105, 100));
+        title.setGravity(Gravity.CENTER);
+        title.setPadding(0, dp(20), 0, dp(30));
+        layout.addView(title);
 
-    // Safety message
-    TextView warning = new TextView(this);
-    warning.setText(
-        "تنبيه: النتائج إرشادية وليست تشخيصاً طبياً."
-    );
-    warning.setTextSize(14);
-    warning.setTextColor(Color.RED);
-    layout.addView(warning);
+        // ===== اسم المريض =====
+        nameInput = new EditText(this);
+        nameInput.setHint("أدخل اسم المريض");
+        nameInput.setInputType(InputType.TYPE_CLASS_TEXT);
+        nameInput.setSingleLine(true);
+        layout.addView(nameInput);
 
-    setContentView(scrollView);
+        // ===== الأعراض =====
+        symptomsInput = new EditText(this);
+        symptomsInput.setHint("اكتب الأعراض، مثال: صداع ودوخة");
+        symptomsInput.setInputType(InputType.TYPE_CLASS_TEXT
+                | InputType.TYPE_TEXT_FLAG_MULTI_LINE);
+        symptomsInput.setMinLines(3);
+        symptomsInput.setGravity(Gravity.TOP | Gravity.START);
+        layout.addView(symptomsInput);
 
-    analyzeButton.setOnClickListener(v -> analyzeSymptoms());
-}
+        // ===== زر التحليل =====
+        Button analyzeButton = new Button(this);
+        analyzeButton.setText("تحليل الأعراض");
+        layout.addView(analyzeButton);
 
-private void analyzeSymptoms() {
+        // ===== النتيجة =====
+        resultText = new TextView(this);
+        resultText.setTextSize(18);
+        resultText.setTextColor(Color.DKGRAY);
+        resultText.setPadding(0, dp(25), 0, dp(25));
+        resultText.setTextIsSelectable(true);
+        layout.addView(resultText);
 
-    String name = nameInput.getText()
-            .toString().trim();
+        // ===== تحذير =====
+        TextView warning = new TextView(this);
+        warning.setText("⚠️ تنبيه: النتائج إرشادية وليست تشخيصاً طبياً.\n"
+                + "في حالات الطوارئ اتصل بالإسعاف فوراً.");
+        warning.setTextSize(14);
+        warning.setTextColor(Color.RED);
+        layout.addView(warning);
 
-    String symptoms = symptomsInput.getText()
-            .toString().trim().toLowerCase();
+        setContentView(scrollView);
 
-    if (symptoms.isEmpty()) {
-        resultText.setText("يرجى كتابة الأعراض أولاً.");
-        return;
+        analyzeButton.setOnClickListener(v -> analyzeSymptoms());
     }
 
-    String result;
+    // ===== منطق التحليل =====
+    private void analyzeSymptoms() {
+        String name = nameInput.getText().toString().trim();
+        String raw = symptomsInput.getText().toString().trim();
+        String symptoms = normalize(raw);
 
-    // Simple educational rules, not an AI diagnosis
-    if (symptoms.contains("ألم صدر")
-            || symptoms.contains("الم صدر")
-            || symptoms.contains("ضيق تنفس")
-            || symptoms.contains("صعوبة التنفس")
-            || symptoms.contains("ألم بالصدر")) {
+        if (symptoms.isEmpty()) {
+            resultText.setText("يرجى كتابة الأعراض أولاً.");
+            return;
+        }
 
-        result = "قد تكون هذه أعراض حالة طارئة.\n"
-                + "اتصل بالإسعاف أو اطلب الرعاية الطارئة الآن.";
+        String result = classify(symptoms);
+        String patientName = name.isEmpty() ? "المريض" : name;
 
-    } else if (symptoms.contains("صداع")
-            || symptoms.contains("دوخة")) {
+        resultText.setText("مرحباً " + patientName + "\n\n"
+                + "الأعراض: " + raw + "\n\n"
+                + "الإرشادات الأولية:\n" + result);
 
-        result = "الصداع والدوخة لهما أسباب متعددة.\n"
-                + "استشر مختصاً إذا استمرت الأعراض أو تكررت، "
-                + "واطلب المساعدة العاجلة إذا كانت شديدة أو مفاجئة.";
+        scrollView.post(() -> scrollView.smoothScrollTo(0, resultText.getTop()));
+    }
 
-    } else if (symptoms.contains("حمى")
-            || symptoms.contains("حرارة")
-            || symptoms.contains("سعال")
-            || symptoms.contains("كحة")) {
+    private String normalize(String s) {
+        return s.toLowerCase()
+                .replaceAll("[\\u064B-\\u065F\\u0670]", "")
+                .replace('أ', 'ا').replace('إ', 'ا').replace('آ', 'ا')
+                .replace('ى', 'ي').replace('ة', 'ه')
+                .replaceAll("\\s+", " ")
+                .trim();
+    }
 
-        result = "قد ترتبط هذه الأعراض بعدة أسباب.\n"
-                + "راقب الأعراض واستشر الطبيب عند استمرارها "
-                + "أو تفاقمها.";
-
-    } else {
-        result = "لا يمكن تحديد سبب الأعراض من هذه المعلومات وحدها.\n"
+    private String classify(String s) {
+        if (matchesAny(s, "الم صدر", "الم في الصدر", "الم بالصدر",
+                "ضيق تنفس", "صعوبه التنفس", "صعوبة التنفس",
+                "ازرقاق", "فقدان الوعي", "اغماء")) {
+            return "⚠️ قد تكون هذه أعراض حالة طارئة.\n"
+                    + "اتصل بالإسعاف أو اطلب الرعاية الطارئة الآن.";
+        }
+        if (matchesAny(s, "صداع", "دوخه", "دوخة", "دوار")) {
+            return "الصداع والدوخة لهما أسباب متعددة.\n"
+                    + "استشر مختصاً إذا استمرت الأعراض أو تكررت، "
+                    + "واطلب المساعدة العاجلة إذا كانت شديدة أو مفاجئة.";
+        }
+        if (matchesAny(s, "حمي", "حمى", "حراره", "حرارة", "سعال", "كحه", "كحة")) {
+            return "قد ترتبط هذه الأعراض بعدة أسباب.\n"
+                    + "راقب الأعراض واستشر الطبيب عند استمرارها أو تفاقمها.";
+        }
+        return "لا يمكن تحديد سبب الأعراض من هذه المعلومات وحدها.\n"
                 + "يرجى استشارة مختص صحي للحصول على تقييم مناسب.";
     }
 
-    String patientName = name.isEmpty()
-            ? "المريض" : name;
+    private boolean matchesAny(String text, String... keywords) {
+        for (String k : keywords) if (text.contains(k)) return true;
+        return false;
+    }
 
-    resultText.setText(
-            "مرحباً " + patientName + "\n\n"
-            + "الأعراض: " + symptoms + "\n\n"
-            + "الإرشادات الأولية:\n" + result
-    );
+    private int dp(int value) {
+        return Math.round(value * getResources().getDisplayMetrics().density);
+    }
 }
