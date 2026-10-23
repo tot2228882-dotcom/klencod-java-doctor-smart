@@ -1,9 +1,9 @@
-package com.example.smartdoctor;
+package com.medix.labanalyzer;
 
+import android.app.Activity;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.text.InputType;
-import android.util.TypedValue;
 import android.view.Gravity;
 import android.widget.Button;
 import android.widget.EditText;
@@ -11,9 +11,7 @@ import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
 
-import androidx.appcompat.app.AppCompatActivity;
-
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends Activity {
 
     private EditText nameInput, symptomsInput;
     private TextView resultText;
@@ -23,7 +21,6 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        // ===== التخطيط الأساسي =====
         LinearLayout layout = new LinearLayout(this);
         layout.setOrientation(LinearLayout.VERTICAL);
         int pad = dp(24);
@@ -33,7 +30,6 @@ public class MainActivity extends AppCompatActivity {
         scrollView = new ScrollView(this);
         scrollView.addView(layout);
 
-        // ===== العنوان =====
         TextView title = new TextView(this);
         title.setText("🩺 طبيبي الذكي\nSmart Doctor AI");
         title.setTextSize(27);
@@ -42,14 +38,12 @@ public class MainActivity extends AppCompatActivity {
         title.setPadding(0, dp(20), 0, dp(30));
         layout.addView(title);
 
-        // ===== اسم المريض =====
         nameInput = new EditText(this);
         nameInput.setHint("أدخل اسم المريض");
         nameInput.setInputType(InputType.TYPE_CLASS_TEXT);
         nameInput.setSingleLine(true);
         layout.addView(nameInput);
 
-        // ===== الأعراض =====
         symptomsInput = new EditText(this);
         symptomsInput.setHint("اكتب الأعراض، مثال: صداع ودوخة");
         symptomsInput.setInputType(InputType.TYPE_CLASS_TEXT
@@ -58,12 +52,10 @@ public class MainActivity extends AppCompatActivity {
         symptomsInput.setGravity(Gravity.TOP | Gravity.START);
         layout.addView(symptomsInput);
 
-        // ===== زر التحليل =====
         Button analyzeButton = new Button(this);
         analyzeButton.setText("تحليل الأعراض");
         layout.addView(analyzeButton);
 
-        // ===== النتيجة =====
         resultText = new TextView(this);
         resultText.setTextSize(18);
         resultText.setTextColor(Color.DKGRAY);
@@ -71,7 +63,6 @@ public class MainActivity extends AppCompatActivity {
         resultText.setTextIsSelectable(true);
         layout.addView(resultText);
 
-        // ===== تحذير =====
         TextView warning = new TextView(this);
         warning.setText("⚠️ تنبيه: النتائج إرشادية وليست تشخيصاً طبياً.\n"
                 + "في حالات الطوارئ اتصل بالإسعاف فوراً.");
@@ -84,7 +75,6 @@ public class MainActivity extends AppCompatActivity {
         analyzeButton.setOnClickListener(v -> analyzeSymptoms());
     }
 
-    // ===== منطق التحليل =====
     private void analyzeSymptoms() {
         String name = nameInput.getText().toString().trim();
         String raw = symptomsInput.getText().toString().trim();
